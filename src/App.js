@@ -30,16 +30,34 @@ const App = () => {
           message: value,
         }),
         headers: {
-          "Content-type": "application/json",
+          "Content-Type": "application/json",
         },
       };
       const response = await fetch("http://localhost:8000/gemini", options);
       const data = await response.text();
       console.log(data);
+      setChatHistory((oldChatHistory) => [
+        ...oldChatHistory,
+        {
+          role: "user",
+          parts: value,
+        },
+        {
+          role: "model",
+          parts: data,
+        },
+      ]);
+      setValue("");
     } catch (error) {
       console.error(error);
       setError("Something went wrong! Please try again later.");
     }
+  };
+
+  const clear = () => {
+    setValue("");
+    setError("");
+    setChatHistory([]);
   };
 
   return (
@@ -57,13 +75,17 @@ const App = () => {
           onChange={(e) => setValue(e.target.value)}
         />
         {!error && <button onClick={getResponse}>Ask me</button>}
-        {error && <button>Clear</button>}
+        {error && <button onClick={clear}>Clear</button>}
       </div>
       {error && <p>{error}</p>}
       <div className="search-result">
-        <div key={""}>
-          <p className="answer"></p>
-        </div>
+        {chatHistory.map((chatItem, _index) => (
+          <div key={_index}>
+            <p className="answer">
+              {chatItem.role}:{chatItem.parts}
+            </p>
+          </div>
+        ))}
       </div>
     </div>
   );
